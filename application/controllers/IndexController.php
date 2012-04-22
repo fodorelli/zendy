@@ -2,12 +2,12 @@
 
 class IndexController extends Zend_Controller_Action
 {
+
     private $day = '';
 
-    public $soap;
-    public $session_id;
+    public $soap = null;
 
-
+    public $session_id = null;
 
     public function init()
     {
@@ -21,8 +21,8 @@ class IndexController extends Zend_Controller_Action
 
     public function soapAction()
     {
-		$soap = new SoapClient('http://alexandalexa.dev/api/soap/?wsdl');
-		$session_id = $soap->login('alexa-api', 'goaway');
+		$soap = new SoapClient('http://aatest.alexandalexa.dev/api/soap/?wsdl');
+		$session_id = $soap->login('logicspot', 'l0gicspot');
 
 		$orderModel = new Application_Model_Orders();
         $orders = $orderModel->getOrderByDate('2012-01-01');
@@ -51,12 +51,13 @@ class IndexController extends Zend_Controller_Action
 
     public function rangeDateAction()
     {
-        $start = '2012-01-01 10:52:22';
+        $start = '2011-12-05 10:52:22';
         $to = '2012-04-09 10:52:22';
 
         $this->view->start = $start;
         $this->view->to = $to;
 
+        $params = array("trace" => true, "connection_timeout" => 5);
         $this->soap = new SoapClient('http://alexandalexa.dev/api/soap/?wsdl');
         $this->session_id = $this->soap->login('alexa-api', 'goaway');
         $ordersModel = new Application_Model_Orders();
@@ -65,8 +66,72 @@ class IndexController extends Zend_Controller_Action
             'from' => $start,
             'to'  => $to));
 
+        $products = $this->soap->call($this->session_id, 'catalog_product.list', array(array('created_at' => array('gt' => '2012-02-01 08:35:49'))));
+        $products = new Zend_Config($products);
+
+
+
+        $fp = fopen('products.csv', 'w');
+        fputs($fp, 'Product Id, Sku, Name, Description, Short Description, Manufacturer, Create At, Updated At, Price, Meta Title' . PHP_EOL);
+        foreach ($products as $one_arr) {
+            $one = $this->soap->call($this->session_id, 'catalog_product.info', $one_arr->product_id);
+            $one = new Zend_Config($one);
+            $ex = array();
+            $ex['product_id'] = $one->product_id;
+            $ex['sku'] = $one->sku;
+            $ex['name'] = $one->name;
+            $ex['description'] = $one->description;
+            $ex['short_description'] = $one->short_description;
+            $ex['manufactucter'] = $one->manufacturer;
+            $ex['created_at'] = $one->created_at;
+            $ex['updated_at'] = $one->updated_at;
+            $ex['price'] = $one->price;
+            $ex['meta_title'] = $one->meta_title;
+
+            fputcsv($fp, $ex);
+        }
+        fclose($fp);
+
+                  die;
+
+
+
+        $created_at = '2010-02-05 08:35:49';
+        $customers = $this->soap->call($this->session_id, 'customer.list', array(array('created_at' => array('gt' => $created_at))));
+
+        $customers = new Zend_Config($customers);
+
+        $fp = fopen('customers.csv', 'w');
+        fputs($fp, 'Customer Id, Crated At, Create In, Prefix, Billing, Shipping, Gender, Firstname, Lastname, Date Of Birth, Email, City, Postcode, Region, Street, Telephone' . PHP_EOL);
+        foreach ($customers as $one) {
+            $ex = array();
+            $ex['customer_id'] = $one->customer_id;
+            $ex['created_at'] = $one->created_at;
+            $ex['created_in'] = $one->created_in;
+            $ex['prefix'] = $one->prefix;
+            $ex['billing'] = $one->billing;
+            $ex['shipping'] = $one->shipping;
+            $ex['gender'] = $one->gender;
+            $ex['firstname'] = $one->firstname;
+            $ex['lastname'] = $one->lastname;
+            $ex['dob'] = $one->dob;
+            $ex['email'] = $one->email;
+            $ex['city'] = $one->city;
+            $ex['postcode'] = $one->postcode;
+            $ex['region'] = $one->region;
+            $ex['street'] = $one->street;
+            $ex['telephone'] = $one->telephone;
+
+            fputcsv($fp, $ex);
+        }
+        fclose($fp);
+                     die;
+
+
         $result = $this->soap->call($this->session_id, 'sales_order.list', array($filters));
 
+
+        var_dump(count($result));die;
         foreach ($result as $order_arr) {
 
             $order = new Zend_Config($order_arr);
@@ -114,7 +179,7 @@ class IndexController extends Zend_Controller_Action
 
         $dailyMapper = new Application_Model_DailyMapper();
         $customerMapper = new Application_Model_CustomerMapper();
-        $fp = fopen('order.csv', 'w');
+        $fp = fopen('orders.csv', 'w');
         fputs($fp,'Create At, Customer Id, First Name, Last Name, Email, Status, Grand Total, Shipping Ammount, Quantity, Weight' . PHP_EOL);
         foreach($ordersModel->orders as $one){
 
@@ -134,7 +199,8 @@ class IndexController extends Zend_Controller_Action
             $customer = new Zend_Config($customer);
 
             $addressCustomer = $this->getCustomerAddress($customer->customer_id);
-            $addressCustomer = new Zend_Config($addressCustomer[0]);
+
+                //$addressCustomer = new Zend_Config($addressCustomer[0]);
 
             $customerModel = new Application_Model_Customer($customer->customer_id);
 
@@ -148,11 +214,11 @@ class IndexController extends Zend_Controller_Action
             $customerModel->billing     = $customer->default_billing;
             $customerModel->shipping    = $customer->default_shipping;
             $customerModel->gender      = $customer->gender;
-            $customerModel->city        = $addressCustomer->city;
-            $customerModel->postcode    = $addressCustomer->postcode;
-            $customerModel->region      = $addressCustomer->region;
-            $customerModel->street      = $addressCustomer->street;
-            $customerModel->telephone   = $addressCustomer->telephone;
+            $customerModel->city        = $addressCustomer['city'];
+            $customerModel->postcode    = $addressCustomer['postcode'];
+            $customerModel->region      = $addressCustomer['region'];
+            $customerModel->street      = $addressCustomer['street'];
+            $customerModel->telephone   = $addressCustomer['telephone'];
 
             $customerMapper->customers[] = $customerModel;
 
@@ -225,7 +291,10 @@ class IndexController extends Zend_Controller_Action
 
     public function getCustomerData($customer_id)
     {
-        $result = $this->soap->call($this->session_id, 'customer.info', $customer_id);
+        if (isset($customer_id))
+            $result = $this->soap->call($this->session_id, 'customer.info', $customer_id);
+        else
+            $result = array();
 
         return $result;
 
@@ -248,11 +317,15 @@ class IndexController extends Zend_Controller_Action
             $results = $this->soap->call($this->session_id, 'sales_order.list', $filters);
             echo '</br>' . count($results);
         }
+        
     }
 
     public function getCustomerAddress($customer_id)
     {
-        return $this->soap->call($this->session_id, 'customer_address.list', $customer_id);
+        if (is_null($customer_id))
+            return array();
+        else
+            return $this->soap->call($this->session_id, 'customer_address.list', $customer_id);
 
     }
 
@@ -261,4 +334,11 @@ class IndexController extends Zend_Controller_Action
         return $this->soap->call($this->session_id, 'sales_order.info', $order_id);
     }
 
+    public function exportCustomersAction()
+    {
+        // action body
+    }
+
+
 }
+

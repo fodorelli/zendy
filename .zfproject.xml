@@ -13,8 +13,15 @@
           <actionMethod actionName="soap"/>
           <actionMethod actionName="listAll"/>
           <actionMethod actionName="rangeDate"/>
+          <actionMethod actionName="exportCustomers"/>
         </controllerFile>
         <controllerFile controllerName="Error"/>
+        <controllerFile controllerName="Soap">
+          <actionMethod actionName="index"/>
+          <actionMethod actionName="exportProducts"/>
+          <actionMethod actionName="exportOrders"/>
+          <actionMethod actionName="exportCustomers"/>
+        </controllerFile>
       </controllersDirectory>
       <formsDirectory enabled="false"/>
       <layoutsDirectory enabled="false"/>
@@ -27,6 +34,9 @@
         <modelFile modelName="CustomerMapper"/>
         <modelFile modelName="Product"/>
         <modelFile modelName="ProductMapper"/>
+        <dbTableDirectory>
+          <dbTableFile dbTableName="Orders"/>
+        </dbTableDirectory>
       </modelsDirectory>
       <modulesDirectory enabled="false"/>
       <viewsDirectory>
@@ -45,6 +55,21 @@
           </viewControllerScriptsDirectory>
           <viewControllerScriptsDirectory forControllerName="Index">
             <viewScriptFile forActionName="rangeDate"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Soap">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Soap">
+            <viewScriptFile forActionName="exportProducts"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Soap">
+            <viewScriptFile forActionName="exportOrders"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Index">
+            <viewScriptFile forActionName="exportCustomers"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Soap">
+            <viewScriptFile forActionName="exportCustomers"/>
           </viewControllerScriptsDirectory>
         </viewScriptsDirectory>
         <viewHelpersDirectory/>
