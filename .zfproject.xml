@@ -36,6 +36,7 @@
         <modelFile modelName="ProductMapper"/>
         <dbTableDirectory>
           <dbTableFile dbTableName="Orders"/>
+          <dbTableFile dbTableName="Users"/>
         </dbTableDirectory>
       </modelsDirectory>
       <modulesDirectory enabled="false"/>

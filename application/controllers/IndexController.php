@@ -3,8 +3,6 @@
 class IndexController extends Zend_Controller_Action
 {
 
-    private $day = '';
-
     public $soap = null;
 
     public $session_id = null;
@@ -16,6 +14,8 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
+        $users = new Application_Model_DbTable_Users();
+        var_dump($users->fetchAll());
         
     }
 
