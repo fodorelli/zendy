@@ -3,21 +3,18 @@
 class Application_Model_Customer
 {
     public $customer_id;
-    public $created_at;
-    public $created_in;
-    public $prefix;
-    public $billing;
-    public $shipping;
-    public $gender;
     public $firstname;
     public $lastname;
-    public $dob;
-    public $email;
-    public $city;
-    public $postcode;
-    public $region;
+    public $prefix;
+    public $created_at;
+    public $updated_at;
     public $street;
+    public $country;
+    public $postcode;
+    public $email;
     public $telephone;
+    public $whosale_retail;
+    public $subscribe_newsletter;
     public $orders = array();
     public $price  = '' ;
     public $total_orders;

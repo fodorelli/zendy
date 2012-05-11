@@ -3,7 +3,7 @@
 class Application_Model_DbTable_Orders extends Zend_Db_Table_Abstract
 {
 
-    protected $_name = 'Orders';
+    protected $_name = 'order';
 
 
 }

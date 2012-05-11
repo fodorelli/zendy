@@ -2,18 +2,21 @@
 
 class Application_Model_Order
 {
+    public $increment_id;
     public $customer_id ;
-    public $created_at;
-    public $customer_email;
-    public $customer_firstname;
-    public $customer_lastname;
-    public $total;
-    public $grand_total;
-    public $cancled;
-    public $shipping_ammount;
+    public $store_id;
+    public $date_created;
     public $status;
     public $qty;
-    public $weight;
+    public $price;
+    public $tax;
+    public $shipping_street;
+    public $shipping_country;
+    public $shipping_postcode;
+    public $shipping_price;
+    public $grand_total;
+    public $currency;
+    public $payment_method;
 
 
 

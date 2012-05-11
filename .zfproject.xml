@@ -37,7 +37,11 @@
         <dbTableDirectory>
           <dbTableFile dbTableName="Orders"/>
           <dbTableFile dbTableName="Users"/>
+          <dbTableFile dbTableName="Cusomer"/>
+          <dbTableFile dbTableName="Product"/>
+          <dbTableFile dbTableName="OrderItems"/>
         </dbTableDirectory>
+        <modelFile modelName="OrderItem"/>
       </modelsDirectory>
       <modulesDirectory enabled="false"/>
       <viewsDirectory>
