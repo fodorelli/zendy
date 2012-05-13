@@ -4,20 +4,26 @@ class SoapController extends Zend_Controller_Action
 {
 
     public $soap = null;
+    public $config;
 
     public $session_id = null;
 
     public function init()
     {
-
-        $this->soap = new SoapClient('http://aatest.alexandalexa.com/api/soap/?wsdl');
-        $this->session_id = $this->soap->login('logicspot', 'l0gicspot');
+        $config = Zend_Registry::get('config');  var_dump($config->soap->client);die;
+        $proxy = new SoapClient($config->soap->client);
+        $this->session_id = $proxy->login($config->soap->username, $config->soap->password);
     }
 
     public function indexAction()
     {
-        $orderModel = new Application_Model_DbTable_Orders();
-        var_dump($orderModel->fetchAll());
+
+        $orders = $this->soap->call($this->session_id, 'sales/order.info', '100061148');
+
+        var_dump($orders);
+
+        //$orderModel = new Application_Model_DbTable_Orders();
+        //var_dump($orderModel->fetchAll());
     }
 
     public function exportProductsAction()

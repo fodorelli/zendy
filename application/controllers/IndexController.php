@@ -311,8 +311,6 @@ class IndexController extends Zend_Controller_Action
             $end = clone $day_created->add(1, Zend_Date::DAY);
 
             //echo $start->toString('yyyy-MM-dd HH-mm-ss');die;
-
-
             $filters = array(array('created_at' => array('from' => $start->toString('yyyy-MM-dd HH:mm:ss'), 'to' => $end->toString('yyyy-MM-dd HH:mm:ss'))));
             $results = $this->soap->call($this->session_id, 'sales_order.list', $filters);
             echo '</br>' . count($results);
