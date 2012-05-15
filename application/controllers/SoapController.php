@@ -7,6 +7,10 @@ class SoapController extends Zend_Controller_Action
     public $config;
 
     public $session_id = null;
+    /*
+     * attribute options for manufacturer
+     */
+    public $attribute_options = array();
 
     public function init()
     {
@@ -30,10 +34,11 @@ class SoapController extends Zend_Controller_Action
         $productModel = new Application_Model_Product();
         //'Sku, Name, Cost Price, Unit Price, Tax Class, Weight, Manufacturer, Created At, Updated At, In Stock,
         // Quantity in Stock, Primary Category, Primary Subcategory'
-        $filters = array('sku' => array('eq' => 'HAC-4121035-03'));// '92574'));
+        $filters = array('product_id' => array('from' => '10', 'to' => '500'));
         $prod = $this->proxy->call($this->session_id, 'catalog_product.list', array($filters));
         //$product = $this->proxy->call($this->session_id, 'catalog_product.info', '93074');
-        $i = 0;
+        $this->attribute_options = $this->proxy->call($this->session_id, 'product_attribute.options', array('attribute_id'=>'66'));
+
 
         foreach ($prod as $one) {
 
@@ -43,56 +48,40 @@ class SoapController extends Zend_Controller_Action
                 $productTable = new Application_Model_DbTable_Product();
                 $product  = $this->proxy->call($this->session_id, 'catalog_product.info', $one['product_id']);
                 $product = new Zend_Config($product);
-                              var_dump($product);
-                //$categories_ids = $product->categories;
-                $all_childrens = $product->all_children;
-                $all_childrens = explode(',', $all_childrens);
 
-                $stock = $this->proxy->call($this->session_id, 'product_stock.list', $product->product_id);
-                if (count($all_childrens) > 1){
-                    foreach ($all_childrens as $cat) {
-                        var_dump($cat);die;
-                        $category = $this->proxy->call($this->session_id, 'catalog_category.info', $cat);
-                        if ($category['level'] == 2){
+                $categories_ids = $product->categories;
 
-                            //$second_level = $this->proxy->call($this->session_id, 'catalog_category.info', $all_childrens[2]);
-                            //var_dump($second_level);die;
-
-                        }
-                        ///var_dump($category);die;
-
-                        break;
-                    }
+                if (count($categories_ids) > 1){
+                    $cats = $this->loadCategory($categories_ids);
                 }
+                $stock = $this->proxy->call($this->session_id, 'product_stock.list', $product->product_id);
 
+                $newRecord = $productTable->createRow();
 
-                //$attribute = $this->proxy->call($this->session_id, 'product_attribute_set.list');
+                $where = $productTable->select()->where('product_id =?', $product->product_id);
+                $record = $productTable->fetchRow($where);
+                if ($record != null){
 
-                $row = $productTable->createRow();
-                $row->product_id = $product->product_id;
-                $row->sku        = $product->sku;
+                    $row =  $record;
+                }else{
+                    $row = $newRecord;
+                    $row->product_id = $product->product_id;
+                    $row->sku        = $product->sku;
+                }
                 $row->name       = $product->name;
                 $row->cost_price = $product->cost;
                 $row->unit_price = $product->price;
                 $row->tax_class  = $product->tax_class_id;
                 $row->weight     = ($product->weight)? $product->weight : 0;
-                $row->manufacturer = $product->manufacturer;
+                $row->manufacturer = $this->getValueById($product->manufacturer);
                 $row->created_at = $product->created_at;
                 $row->updated_at = $product->updated_at;
                 $row->in_stock   = ($stock[0]['is_in_stock'])? 'Y' : 'N';
                 $row->qty_in_stock = (int)$stock[0]['qty'];
-                $row->primary_category = '';
-                $row->primary_subcategory = '';
-                //$row->save();
+                $row->primary_category = (isset($cats['primary_category'])? $cats['primary_category'] : '');
+                $row->primary_subcategory = utf8_decode(isset($cats['primary_subcategory'])? $cats['primary_subcategory'] : '');
+                $row->save();
 
-
-
-
-
-
-                if ($i == 10)
-                    break;
-                $i++;
             }
         }
 
@@ -106,6 +95,50 @@ class SoapController extends Zend_Controller_Action
     public function exportCustomersAction()
     {
         // action body
+    }
+    /**
+     * load category by given array of ids
+     * @param $category_ids
+     * @return array
+     */
+    private function loadCategory($category_ids){
+
+        $cats = array();
+        if(count($category_ids) > 1){
+
+            foreach ($category_ids as $cat_id) {
+
+                if (isset($cats['primary_category']) && isset($cats['primary_subcategory']))
+                    break;
+                $category = $this->proxy->call($this->session_id, 'catalog_category.info', $cat_id);
+                if ($category['level'] ==2){
+
+                   $cats['primary_category'] = $category['name'];
+                }
+
+                if ($category['level'] == 4 && trim($category['name']) != 'View All')
+                    $cats['primary_subcategory'] = $category['name'];
+
+            }
+
+        }
+        return $cats;
+    }
+    /*
+     * get attribute value by id
+     * @id string
+     */
+    private function getValueById($id)
+    {
+        foreach ($this->attribute_options as $attribute) {
+
+            if($attribute['value'] == $id)
+                return $attribute['label'];
+
+        }
+        return '';
+
+
     }
 
 }
